@@ -1,7 +1,7 @@
 #
 # Provides a deploy image for Trellis with:
 # - Ubuntu 18.04
-# - Ansible
+# - Ansible 2.7
 # - Node.js 11
 # - Yarn
 #
@@ -32,7 +32,10 @@ RUN python -m pip install --upgrade pip \
     && pip install --upgrade pywinrm
 
 # Downloading Ansible's source tree
-RUN git clone git://github.com/ansible/ansible.git --recursive
+RUN git clone git://github.com/ansible/ansible.git --recursive \
+    && cd ansible \
+    && git fetch origin v2.7.12 \
+    && git checkout v2.7.12
 
 # Compiling Ansible
 RUN cd ansible \
