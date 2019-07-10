@@ -56,7 +56,6 @@ RUN apt-get remove -y --auto-remove \
         build-essential \
         python-pip \
         python-dev \
-        git \
         libffi-dev \
         libssl-dev \
         curl \
