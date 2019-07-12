@@ -52,8 +52,8 @@ RUN mkdir -p /opt/ansible \
 # Installing Node.js and Yarn
 RUN apt-get install -y nodejs yarn
 
-# Installing handy tools (not absolutely required)
-RUN apt-get install -y sshpass openssh-client
+# Installing handy tools
+RUN apt-get install -y sshpass openssh-client rsync
 
 # Clean up
 RUN apt-get remove -y --auto-remove \
@@ -70,14 +70,10 @@ RUN apt-get remove -y --auto-remove \
 RUN mkdir -p /etc/ansible \
     && echo 'localhost' > /etc/ansible/hosts
 
-# Export Yarn version
-RUN export YARN_VERSION=$(yarn --version)
-
 # Define environment variables
 ENV PATH             /opt/ansible/bin:$PATH
-ENV PATH             /opt/yarn-$YARN_VERSION/bin:$PATH
 ENV PYTHONPATH       /opt/ansible/lib:$PYTHONPATH
 ENV MANPATH          /opt/ansible/docs/man:$MANPATH
 
-# Default command: displays Ansible version
+# Default command: displays tool versions
 CMD [ "sh", "-c", "echo \"Ansible: \\e[32m$(ansible --version | cut -d ' ' -f 2 | tr -d '\\n')\\e[39m\\nNode:    \\e[32m$(node --version | cut -d 'v' -f 2)\\e[39m\\nYarn:    \\e[32m$(yarn --version)\\e[39m\"" ]
