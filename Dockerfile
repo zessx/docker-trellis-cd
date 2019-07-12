@@ -1,15 +1,22 @@
 #
 # Provides a deploy image for Trellis with:
 # - Ubuntu 18.04
-# - Ansible 2.7
-# - Node.js 11
+# - Ansible
+# - Node.js
 # - Yarn
 #
 FROM ubuntu:18.04
 
 LABEL author="Samuel Marchal <samuel@148.fr>"
 
-# Adding Ansible's prerequisites
+# Adding Yarn package repository
+RUN apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y curl \
+    && curl -sL https://deb.nodesource.com/setup_11.x | bash \
+    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+# Installing Ansible's prerequisites
 RUN apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -q \
         build-essential \
@@ -17,12 +24,6 @@ RUN apt-get update -y \
         libffi-dev libssl-dev \
         libxml2-dev libxslt1-dev zlib1g-dev \
         git
-
-# Adding Node.js and Yarn prerequisites
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl \
-    && curl -sL https://deb.nodesource.com/setup_11.x | bash \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
 # Upgrading pip
 # @see https://github.com/pypa/pip/issues/5240#issuecomment-383129401
@@ -69,11 +70,14 @@ RUN apt-get remove -y --auto-remove \
 RUN mkdir -p /etc/ansible \
     && echo 'localhost' > /etc/ansible/hosts
 
+# Export Yarn version
+RUN export YARN_VERSION=$(yarn --version)
+
 # Define environment variables
-ENV PATH        /opt/ansible/bin:$PATH
-ENV PATH        /opt/yarn-1.16.0/bin:$PATH
-ENV PYTHONPATH  /opt/ansible/lib:$PYTHONPATH
-ENV MANPATH     /opt/ansible/docs/man:$MANPATH
+ENV PATH             /opt/ansible/bin:$PATH
+ENV PATH             /opt/yarn-$YARN_VERSION/bin:$PATH
+ENV PYTHONPATH       /opt/ansible/lib:$PYTHONPATH
+ENV MANPATH          /opt/ansible/docs/man:$MANPATH
 
 # Default command: displays Ansible version
-CMD [ "ansible-playbook", "--version" ]
+CMD [ "sh", "-c", "echo \"Ansible: \\e[32m$(ansible --version | cut -d ' ' -f 2 | tr -d '\\n')\\e[39m\\nNode:    \\e[32m$(node --version | cut -d 'v' -f 2)\\e[39m\\nYarn:    \\e[32m$(yarn --version)\\e[39m\"" ]
