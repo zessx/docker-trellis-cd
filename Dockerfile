@@ -35,8 +35,8 @@ RUN python -m pip install --upgrade pip \
 # Downloading Ansible's source tree
 RUN git clone git://github.com/ansible/ansible.git --recursive \
     && cd ansible \
-    && git fetch origin v2.7.12 \
-    && git checkout v2.7.12
+    && git fetch origin v2.9.15 \
+    && git checkout v2.9.15
 
 # Compiling Ansible
 RUN cd ansible \
